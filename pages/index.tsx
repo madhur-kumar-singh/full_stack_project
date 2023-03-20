@@ -2,8 +2,7 @@ import router from "next/router";
 import { useState } from "react";
 import { Button, Card, CardContent, Input } from "semantic-ui-react";
 import styled from "styled-components";
-import 'semantic-ui-css/semantic.min.css'
-
+import "semantic-ui-css/semantic.min.css";
 
 const OuterContainer = styled.div`
   display: flex;
@@ -37,54 +36,54 @@ const DropDown = styled.select`
 
 const Option = styled.option``;
 
-
 export default function Home() {
   const [status, setStatus] = useState("");
+  const [ruleId, setRuleId] = useState("");
+  const [description, setDescription] = useState("");
+  const [severity, setSeverity] = useState("");
+  const [line, setLine] = useState("");
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [path, setPath] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [findings, setFindings] = useState(false);
-  
-  const showButton = async () => {
-    const getAPI=await fetch('./api/form-input',{
-      method:'GET',
-      headers: {
-        "Content-Type": "application/json",
-      }
-    })
-    const resGet=await getAPI.json()
-    console.log(resGet.data);
-    
+
+  const showButton = () => {
+    router.push("/results");
   };
 
   const submitButton = async () => {
-    const postAPI= await fetch('./api/form-input',{
-      method:'POST',
-      body:JSON.stringify({
-        status:status,
-        name:name,
-        type:type,
-        path:path
-      })
-    })
-    const res=await postAPI.json()    
-    if (res) setIsSubmitted(true);
-
-    // const getAPI=await fetch('./api/form-input',{
-    //   method:'GET',
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   }
-    // })
-    // const resGet=await getAPI.json()
-    // console.log(resGet.data);
-    
+    const postAPI = await fetch("./api/form-input", {
+      method: "POST",
+      body: JSON.stringify({
+        status: status,
+        name: name,
+        queuedAt: new Date(),
+        findings: {
+          type: type,
+          ruleId: ruleId,
+          location: {
+            path: path,
+            positions: {
+              begin: {
+                line: line,
+              },
+            },
+          },
+          metadata: {
+            description: description,
+            severity: severity,
+          },
+        },
+      }),
+    });
+    const res = await postAPI.json();
+    if (res.status=="200") setIsSubmitted(true);
   };
 
   return (
     <OuterContainer>
-      <Card style={{ width: "30%" }}>
+      <Card style={{ width: "auto" }}>
         <CardContent>
           <form>
             <Row>
@@ -106,10 +105,10 @@ export default function Home() {
                 }}
               >
                 <Option value="">Status</Option>
-                <Option value="queued">Queued</Option>
-                <Option value="inProgress">In Progress</Option>
-                <Option value="success">Success</Option>
-                <Option value="failure">Failure</Option>
+                <Option value="Queued">Queued</Option>
+                <Option value="In Progress">In Progress</Option>
+                <Option value="Success">Success</Option>
+                <Option value="Failure">Failure</Option>
               </DropDown>
               <FormLabel
                 style={{
@@ -126,7 +125,7 @@ export default function Home() {
               </FormLabel>
             </Row>
             {findings && (
-              <>
+              <div style={{ display: "flex", flexDirection: "column" }}>
                 {" "}
                 <Row>
                   <FormLabel>Type</FormLabel>
@@ -135,20 +134,48 @@ export default function Home() {
                     onChange={(e: any) => {
                       setType(e.target.value);
                     }}
-                    onClick={() => setIsSubmitted(false)}
                   />
-                </Row>
-                <Row>
                   <FormLabel>Path</FormLabel>
                   <InputBox
                     value={path}
                     onChange={(e: any) => {
                       setPath(e.target.value);
                     }}
-                    onClick={() => setIsSubmitted(false)}
                   />
                 </Row>
-              </>
+                <Row>
+                  <FormLabel>Rule ID</FormLabel>
+                  <InputBox
+                    value={ruleId}
+                    onChange={(e: any) => {
+                      setRuleId(e.target.value);
+                    }}
+                  />
+                  <FormLabel>Begin line</FormLabel>
+                  <InputBox
+                    value={line}
+                    onChange={(e: any) => {
+                      setLine(e.target.value);
+                    }}
+                  />
+                </Row>
+                <Row>
+                  <FormLabel>Description</FormLabel>
+                  <InputBox
+                    value={description}
+                    onChange={(e: any) => {
+                      setDescription(e.target.value);
+                    }}
+                  />
+                  <FormLabel>Severity</FormLabel>
+                  <InputBox
+                    value={severity}
+                    onChange={(e: any) => {
+                      setSeverity(e.target.value);
+                    }}
+                  />
+                </Row>
+              </div>
             )}
           </form>
         </CardContent>
