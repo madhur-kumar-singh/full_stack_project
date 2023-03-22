@@ -14,7 +14,9 @@ export default async function handler(req: { method: any; body:any },res: any){
         const post=await db.collection("posts").find({}).toArray();
         res.json({status:200,data:post})
     }
-    }catch(e){
-        
+    }catch(e:any){
+        console.error("outer", e.message);
+        return res.status(500).send(e);
     }
+   
 }
